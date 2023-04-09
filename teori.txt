@@ -1,0 +1,113 @@
+-- Pengenalan HttpRouter
+        1. HttpRouter merupakan salah satu OpenSource Library yang populer untuk Http Handler di Go-Lang
+        2. HttpRouter terkenal dengan kecepatannya dan juga sangat minimalis
+        3. Hal ini dikarenakan HttpRouter hanya memiliki fitur untuk routing saja,
+           tidak memiliki fitur apapun selain itu
+           https://github.com/julienschmidt/httprouter
+
+        -- Menambah HttpRouter ke Project
+                go get github.com/julienschmidt/httprouter
+                go get github.com/stretchr/testify
+
+-- Router
+        1. Inti dari library HttpRouter adalah struct Router
+        2. Router ini merupakan implementasi dari http.Handler, sehingga kita bisa dengan mudah menambahkan ke dalam http.Server
+        3. Untuk membuat Router, kita bisa menggunakan function httprouter.New(), yang akan mengembalikan Router pointer
+
+        -- HTTP Method
+                1. Router mirip dengan ServeMux, dimana kita bisa menambahkan route ke dalam Router
+                2. Kelebihan dibandingkan dengan ServeMux adalah, pada Router,
+                   kita bisa menentukan HTTP Method yang ingin kita gunakan, misal GET, POST, PUT, dan lain-lain
+                3. Cara menambahkan route ke dalam Router adalah gunakan function yang sama dengan HTTP Method nya,
+                   misal router.GET(), router.POST(), dan lain-lain
+
+        -- httprouter.Handle
+                1. Saat kita menggunakan ServeMux, ketika menambah route, kita bisa menambahkan http.Handler
+                2. Berbeda dengan Router, pada Router kita tidak menggunakan http.Handler lagi,
+                   melainkan menggunakan type httprouter.Handle
+                3. Perbedaan dengan http.Handler adalah, pada httprouter.Handle, terdapat parameter ke tiga yaitu Params,
+                   yang akan kita bahas nanti di chapter tersendiri
+
+-- Params
+        1. httprouter.Handle memiliki parameter yang ketiga, yaitu Params. Untuk apa kegunaan Params?
+        2. Params merupakan tempat untuk menyimpan parameter yang dikirim dari client
+        3. Namun Params ini bukan query parameter, melainkan parameter di URL
+        4. Kadang kita butuh membuat URL yang tidak fix, alias bisa berubah-ubah, misal /products/1, /products/2, dan seterusnya
+        5. ServeMux tidak mendukung hal tersebut, namun Router mendukung hal tersebut
+        6. Parameter yang dinamis yang terdapat di URL, secara otomatis dikumpulkan di Params
+        7. Namun, agar Router tahu, kita harus memberi tahu ketika menambahkan Route, dibagian mana kita akan buat URL path nya menjadi dinamis
+
+-- Router Pattern
+        1. Sekarang kita sudah tahu bahwa dengan menggunakan Router, kita bisa menambah params di URL
+        2. Sekarang pertanyaannya, bagaimana pattern (pola) pembuatan parameter nya?
+
+        -- Named Parameter
+                1. Named parameter adalah pola pembuatan parameter dengan menggunakan nama
+                2. Setiap nama parameter harus diawali dengan : (titik dua), lalu diikuti dengan nama parameter
+                3. Contoh, jika kita memiliki pattern seperti ini :
+                        Pattern                     /user/:user
+                            /user/eko                   match
+                            /user/you                   match
+                            /user/eko/profile           no match
+                            /user/                      no match
+
+        -- Catch All Parameter
+                1. Selain named parameter, ada juga yang bernama catch all parameter, yaitu menangkap semua parameter
+                2. Catch all parameter harus diawali dengan * (bintang), lalu diikuti dengan nama parameter
+                3. Catch all parameter harus berada di posisi akhir URL
+                        Pattern                         /src/*filepath
+                            /src/                           no match
+                            /src/somefile                   match
+                            /src/subdir/somefile            match
+
+-- Serve File
+            1. Pada materi Go-Lang Web, kita sudah pernah membahas tentang Serve File
+            2. Pada Router pun, mendukung serve static file menggunakan function ServeFiles(Path, FileSystem)
+            3. Dimana pada Path, kita harus menggunakan Catch All Parameter
+            4. Sedangkan pada FileSystem kita bisa melakukan manual load dari folder atau menggunakan golang embed,
+               seperti yang pernah kita bahas di materi Go-Lang Web
+
+-- Panic Handler
+            1. Apa yang terjadi jika terjadi panic pada logic Handler yang kita buat?
+            2. Secara otomatis akan terjadi error, dan web akan berhenti mengembalikan response
+            3. Kadang saat terjadi panic, kita ingin melakukan sesuatu, misal memberitahu jika terjadi kesalahan di web,
+               atau bahkan mengirim informasi log kesalahan yang terjadi
+            4. Sebelumnya, seperti yang sudah kita bahas di materi Go-Lang Web, jika kita ingin menangani panic,
+               kita harus membuat Middleware khusus secara manual
+            5. Namun di Router, sudah disediakan untuk menangani panic,
+               caranya dengan menggunakan attribute
+               PanicHandler : func(http.ResponseWriter, *http.Request, interface{})
+
+-- Not Found Handler
+            1. Selain panic handler, Router juga memiliki not found handler
+            2. Not found handler adalah handler yang dieksekusi ketika client mencoba melakukan request URL yang memang tidak terdapat di Router
+            3. Secara default, jika tidak ada route tidak ditemukan, Router akan melanjutkan request ke http.NotFound, namun kita bisa mengubah nya
+            4. Caranya dengan mengubah router.NotFound = http.Handler
+
+-- Method Not Allowed Handler
+            1. Saat menggunakan ServeMux, kita tidak bisa menentukan HTTP Method apa yang digunakan untuk Handler
+            2. Namun pada Router, kita bisa menentukan HTTP Method yang ingin kita gunakan,
+               lantas apa yang terjadi jika client tidak mengirim HTTP Method sesuai dengan yang kita tentukan?
+            3. Maka akan terjadi error Method Not Allowed
+            4. Secara default, jika terjadi error seperti ini, maka Router akan memanggil function http.Error
+            5. Jika kita ingin mengubahnya, kita bisa gunakan router.MethodNotAllowed = http.Handler
+
+-- Middleware
+        1. HttpRouter hanyalah library untuk http router saja, tidak ada fitur lain selain router
+        2. Dan karena Router merupakan implementasi dari http.Handler, jadi untuk middleware,
+           kita bisa membuat sendiri, seperti yang sudah kita bahas pada course Go-Lang Web
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
